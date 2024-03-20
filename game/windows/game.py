@@ -12,12 +12,13 @@ class GameWindow(BaseWindow):
     name = "game"
 
     def _build(self):
+        self.__label = gui.Label(0, "ТИПО ЧАТИК:", "main")
         main_layout = gui.FloatLayout(0)
 
         layout = gui.VerticalLayout(display.get_surface_center(), 10)
         layout.add(
             [
-                gui.Label(0, "", "main"),
+                self.__label,
                 gui.Button(
                     0,
                     hovered_cursor=cursors.get_cursor("pointer-1"),
@@ -43,4 +44,4 @@ class GameWindow(BaseWindow):
 
         data = network.get_data()
         if data:
-            print(data)
+            self.__label.set_text(self.__label.get_text() + "\n" + str(data))
