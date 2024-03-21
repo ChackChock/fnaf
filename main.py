@@ -23,10 +23,14 @@ def initialize() -> None:
 
 def create_windows() -> None:
     from game.windows.menu import MenuWindow
+    from game.windows.client_room import ClientRoomWindow
+    from game.windows.server_room import ServerRoomWindow
     from game.windows.game import GameWindow
     from scripts.windows import manager
 
     manager.create_window(MenuWindow)
+    manager.create_window(ClientRoomWindow)
+    manager.create_window(ServerRoomWindow)
     manager.create_window(GameWindow)
 
 

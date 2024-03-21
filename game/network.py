@@ -7,22 +7,27 @@ from typing import Any, List, Optional
 
 @dataclass
 class __Info:
-    clients: List[socket.socket] = field(default_factory=list)
+    connections: List[socket.socket] = field(default_factory=list)
     data: List[Any] = field(default_factory=list)
     mode: Optional[str] = None
 
 
-def __handle_client(conn: socket.socket):
+def __handle_client(conn: socket.socket) -> None:
+    connected = True
+    data = {"members": len(__info.connections) + 1}
+
+    send_message("new-client", data)
+    __info.data.append({"key": "new-client", "data": data})
+
     try:
-        connected = True
         while connected:
             data = pickle.loads(conn.recv(1024))
 
             if data:
                 __info.data.append(data)
-                for client in __info.clients:
-                    if client is not conn:
-                        client.sendall(pickle.dumps(data))
+                for connection in __info.connections:
+                    if connection is not conn:
+                        connection.sendall(pickle.dumps(data))
             else:
                 connected = False
 
@@ -33,20 +38,19 @@ def __handle_client(conn: socket.socket):
 
 
 def __start_server() -> None:
-    print("Start server")
-    __socket.bind(__addr)
+    __socket.bind(("", __port))
     __socket.listen()
 
-    while True:
-        conn, _ = __socket.accept()
-        __info.clients.append(conn)
-        threading.Thread(target=__handle_client, args=(conn,)).start()
+    try:
+        while True:
+            conn, _ = __socket.accept()
+            __info.connections.append(conn)
+            threading.Thread(target=__handle_client, args=(conn,)).start()
+    except Exception:
+        pass
 
 
-def __start_client():
-    print("Start client")
-    __socket.connect(__addr)
-
+def __start_client(ip: str) -> None:
     try:
         while True:
             data = pickle.loads(__socket.recv(1024))
@@ -55,11 +59,12 @@ def __start_client():
         pass
 
 
-def start_client() -> None:
+def start_client(ip: str) -> None:
     if __info.mode is not None:
         raise Exception()
 
-    threading.Thread(target=__start_client).start()
+    __socket.connect((ip, __port))
+    threading.Thread(target=__start_client, args=(ip,)).start()
     __info.mode = "client"
 
 
@@ -71,13 +76,13 @@ def start_server() -> None:
     __info.mode = "server"
 
 
-def send_message(data: Any) -> None:
+def send_message(key: str, data: Any) -> None:
     if __info.mode == "client":
-        __socket.send(pickle.dumps(data))
+        __socket.send(pickle.dumps({"key": key, "data": data}))
 
     else:
-        for client in __info.clients:
-            client.sendall(pickle.dumps(data))
+        for client in __info.connections:
+            client.sendall(pickle.dumps({"key": key, "data": data}))
 
 
 def close() -> None:
@@ -94,6 +99,10 @@ def get_mode() -> Optional[str]:
     return __info.mode
 
 
-__addr = ("localhost", 5050)
+def get_connections() -> List[socket.socket]:
+    return __info.connections.copy()
+
+
+__port = 5050
 __socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 __info = __Info()

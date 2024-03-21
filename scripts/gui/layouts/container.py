@@ -106,7 +106,7 @@ class Container(Widget):
         return self.__children.index(child)
 
     def clear(self) -> None:
-        for child in self.__children:
+        for child in self.__children.copy():
             child.set_parent(None)
             self.__children.remove(child)
 

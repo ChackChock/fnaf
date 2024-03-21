@@ -3,21 +3,11 @@ import pygame
 from scripts import gui
 from scripts.system import cursors, display
 
-from .. import network
-
 from .base_window import BaseWindow
 
 
 class MenuWindow(BaseWindow):
     name = "menu"
-
-    def __connect_to_room(self) -> None:
-        network.start_client()
-        self._start_window_change("game")
-
-    def __create_room(self) -> None:
-        network.start_server()
-        self._start_window_change("game")
 
     def _build(self):
         main_layout = gui.FloatLayout(0)
@@ -30,14 +20,18 @@ class MenuWindow(BaseWindow):
                     hovered_cursor=cursors.get_cursor("pointer-1"),
                     clicked_cursor=cursors.get_cursor("pointer-2"),
                     label=gui.Label(0, "Подключиться", "main"),
-                    click_listener=lambda w, e: self.__connect_to_room(),
+                    click_listener=lambda w, e: self._start_window_change(
+                        "client-room"
+                    ),
                 ),
                 gui.Button(
                     0,
                     hovered_cursor=cursors.get_cursor("pointer-1"),
                     clicked_cursor=cursors.get_cursor("pointer-2"),
                     label=gui.Label(0, "Создать комнату", "main"),
-                    click_listener=lambda w, e: self.__create_room(),
+                    click_listener=lambda w, e: self._start_window_change(
+                        "server-room"
+                    ),
                 ),
                 gui.Button(
                     0,

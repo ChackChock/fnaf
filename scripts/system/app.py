@@ -66,7 +66,6 @@ class App:
             caption,
             icon,
         )
-        print(app_data.get("display-size", constants.DISPLAY_SIZE), app_data.get("surface-size", constants.SURFACE_SIZE))
 
     def __handle_events(self) -> None:
         """Handle Pygame events such as keyboard input and mouse actions.
